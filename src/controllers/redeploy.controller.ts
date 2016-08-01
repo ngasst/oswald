@@ -1,7 +1,7 @@
 import * as express from 'express';
 import { outputJSON } from 'fs-extra';
-import { join } from 'path';
-import { which, exec, ExecOutputReturnValue, exit  } from 'shelljs';
+import { join, resolve } from 'path';
+import { which, exec, ExecOutputReturnValue, exit, cd } from 'shelljs';
 import { ChildProcess } from 'child_process';
 import * as moment from 'moment';
 import { ILogFile, IStep } from '../models/redeploy.model';
@@ -11,25 +11,27 @@ export class RedeployController {
     static run: (req: express.Request, res: express.Response) => void = (req: express.Request, res: express.Response) => {
         let service = req.params['service'];
         let repo = req.params['repo'];
-        let image = req.params['image'];
         let compFile = req.params['compose'];
         let logOutput: ILogFile = {
-            name: `${moment().unix()}-${repo}-${image}`,
+            name: `${moment().unix()}-${repo}-${service}`,
             steps: []
         };
         if (!which('git')) {
             let output =+ `Git is not installed. Oswald requires Git in order to function!`;
         }
 
+        goToRepo(repo);
+
         gitPull(repo).then((gitStep: IStep) => {
             logOutput.steps.push(gitStep);
             dockerStop(compFile, service).then((dockerStopStep: IStep) => {
                 logOutput.steps.push(dockerStopStep);
-                dockerPull(compFile, image).then((dockerPullStep: IStep) => {
+                dockerPull(compFile, service).then((dockerPullStep: IStep) => {
                     logOutput.steps.push(dockerPullStep);
                     dockerUp(compFile, service).then((dockerUpStep: IStep) => {
                         logOutput.steps.push(dockerUpStep);
                         logFile(logOutput);
+                        res.render(`<h2>Done!!</h2>`);
                     }).catch((err: IStep) => {
                         logOutput.steps.push(err);
                         logFile(logOutput);
@@ -47,6 +49,11 @@ export class RedeployController {
             logFile(logOutput);
         });
     }
+}
+
+function goToRepo(repo: string) {
+    let path: string = resolve(`/root/${repo}`);
+    cd(path);
 }
 
 function logFile(output: ILogFile) {
@@ -81,13 +88,13 @@ function dockerStop(dockerComposeName: string, dockerServiceName: string): Promi
     });
 }
 
-function dockerPull(dockerComposeName: string, dockerImageName: string): Promise<any> {
+function dockerPull(dockerComposeName: string, dockerServiceName: string): Promise<any> {
     let step: IStep = {
-        name: `Pull Docker Image ${dockerImageName}`,
+        name: `Pull Docker Image ${dockerServiceName}`,
         started: moment().toDate()
     };
     return new Promise((resolve: any, reject: any) => {
-        exec(`docker-compose -f ${dockerComposeName} ${dockerImageName} pull`, (code, stdout, stderr) => {
+        exec(`docker-compose -f ${dockerComposeName} ${dockerServiceName} pull`, (code, stdout, stderr) => {
             if (stderr) {
                 let output: string = stderr;
                 step.ended = moment().toDate();

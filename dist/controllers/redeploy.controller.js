@@ -8,24 +8,25 @@ class RedeployController {
 RedeployController.run = (req, res) => {
     let service = req.params['service'];
     let repo = req.params['repo'];
-    let image = req.params['image'];
     let compFile = req.params['compose'];
     let logOutput = {
-        name: `${moment().unix()}-${repo}-${image}`,
+        name: `${moment().unix()}-${repo}-${service}`,
         steps: []
     };
     if (!shelljs_1.which('git')) {
         let output = +`Git is not installed. Oswald requires Git in order to function!`;
     }
+    goToRepo(repo);
     gitPull(repo).then((gitStep) => {
         logOutput.steps.push(gitStep);
         dockerStop(compFile, service).then((dockerStopStep) => {
             logOutput.steps.push(dockerStopStep);
-            dockerPull(compFile, image).then((dockerPullStep) => {
+            dockerPull(compFile, service).then((dockerPullStep) => {
                 logOutput.steps.push(dockerPullStep);
                 dockerUp(compFile, service).then((dockerUpStep) => {
                     logOutput.steps.push(dockerUpStep);
                     logFile(logOutput);
+                    res.render(`<h2>Done!!</h2>`);
                 }).catch((err) => {
                     logOutput.steps.push(err);
                     logFile(logOutput);
@@ -44,6 +45,10 @@ RedeployController.run = (req, res) => {
     });
 };
 exports.RedeployController = RedeployController;
+function goToRepo(repo) {
+    let path = path_1.resolve(`/root/${repo}`);
+    shelljs_1.cd(path);
+}
 function logFile(output) {
     let date = moment().format('fullDate');
     let path = path_1.join(__dirname, `../data/${date}.json`);
@@ -75,13 +80,13 @@ function dockerStop(dockerComposeName, dockerServiceName) {
         });
     });
 }
-function dockerPull(dockerComposeName, dockerImageName) {
+function dockerPull(dockerComposeName, dockerServiceName) {
     let step = {
-        name: `Pull Docker Image ${dockerImageName}`,
+        name: `Pull Docker Image ${dockerServiceName}`,
         started: moment().toDate()
     };
     return new Promise((resolve, reject) => {
-        shelljs_1.exec(`docker-compose -f ${dockerComposeName} ${dockerImageName} pull`, (code, stdout, stderr) => {
+        shelljs_1.exec(`docker-compose -f ${dockerComposeName} ${dockerServiceName} pull`, (code, stdout, stderr) => {
             if (stderr) {
                 let output = stderr;
                 step.ended = moment().toDate();
