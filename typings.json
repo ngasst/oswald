@@ -1,0 +1,14 @@
+{
+  "name": "oswald",
+  "dependencies": {},
+  "globalDependencies": {
+    "cors": "registry:dt/cors#0.0.0+20160708202709",
+    "express": "registry:dt/express#4.0.0+20160708185218",
+    "express-route-fs": "registry:dt/express-route-fs#0.1.0+20160316155526",
+    "express-serve-static-core": "registry:dt/express-serve-static-core#4.0.0+20160715232503",
+    "fs-extra": "registry:dt/fs-extra#0.0.0+20160517121359",
+    "moment": "registry:dt/moment#2.8.0+20160316155526",
+    "node": "registry:dt/node#6.0.0+20160720070758",
+    "shelljs": "registry:dt/shelljs#0.0.0+20160526131156"
+  }
+}
