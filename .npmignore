@@ -1,0 +1,9 @@
+/node_modules
+/src
+/typings
+.gitignore
+.npmignore
+tsconfig.json
+typings.json
+gulpfile.json
+processes.json

@@ -1,0 +1,9 @@
+{
+  "apps" : [{
+    "merge_logs"  : true,
+    "name"        : "oswald-docker",
+    "out_file"    : "/tmp/api.log",
+    "log_date_format" : "MM/DD/YYYY HH:mm:ss",
+    "script"      : "dist/ndex.js"
+  }]
+}

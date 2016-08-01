@@ -1,10 +1,11 @@
 {
-  "name": "oswald",
-  "version": "0.0.1",
+  "name": "oswald-docker",
+  "version": "0.0.2",
   "description": "An automated deployment manager",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "preinstall": "npm install -g shelljs pm2",
+    "start": "pm2 start --no-daemon processes.json"
   },
   "keywords": [
     "git",
@@ -13,14 +14,16 @@
   ],
   "author": "Gaston Ndanyuzwe",
   "license": "MIT",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-typescript": "^2.13.6",
+    "typescript": "^1.8.10",
+    "typings": "^1.3.2"
+  },
   "dependencies": {
     "cors": "^2.7.1",
     "express": "^4.14.0",
-    "fs-extra": "^0.30.0",
-    "gulp": "^3.9.1",
-    "gulp-typescript": "^2.13.6",
     "moment": "^2.14.1",
-    "typescript": "^1.8.10",
-    "typings": "^1.3.2"
+    "fs-extra": "^0.30.0"
   }
 }
